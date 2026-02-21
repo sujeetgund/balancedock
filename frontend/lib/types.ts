@@ -1,5 +1,5 @@
 export interface User {
-  id: string;
+  user_id: string;
   full_name: string;
   username: string;
 }
@@ -9,6 +9,7 @@ export interface BankAccount {
   account_name: string;
   bank_name: string;
   account_number: string;
+  account_type: "salary" | "savings" | "credit";
   created_at: string;
 }
 
@@ -19,6 +20,9 @@ export interface Statement {
   uploaded_at: string;
   from_date: string;
   to_date: string;
+  opening_balance: number;
+  closing_balance: number;
+  filepath: string;
 }
 
 export interface StatementData {
@@ -46,7 +50,10 @@ export interface StatementData {
 
 export interface Secret {
   secret_id: string;
-  token: string;
+  user_id: string;
+  secret_key: string;
+  expires_at: string | null;
+  description: string | null;
   created_at: string;
 }
 

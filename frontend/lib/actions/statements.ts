@@ -5,8 +5,149 @@ import type { Statement, StatementData } from "../types";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const API_BASE_URL = `${BACKEND_URL}/api/v1`;
 const IS_DEV = process.env.NODE_ENV === "development";
 const TEST_TOKEN = "dev-mock-token-12345";
+
+type ApiStatement = {
+  statement_id: string;
+  account_id: string;
+  from_date: string;
+  to_date: string;
+  opening_balance: number;
+  closing_balance: number;
+  filepath: string;
+  created_at: string;
+};
+
+function extractErrorMessage(payload: unknown, fallback: string): string {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "detail" in payload &&
+    typeof (payload as { detail: unknown }).detail === "string"
+  ) {
+    return (payload as { detail: string }).detail;
+  }
+
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "message" in payload &&
+    typeof (payload as { message: unknown }).message === "string"
+  ) {
+    return (payload as { message: string }).message;
+  }
+
+  return fallback;
+}
+
+function normalizeStatement(statement: ApiStatement): Statement {
+  const fileName = statement.filepath.split("/").pop() || "statement.json";
+
+  return {
+    statement_id: statement.statement_id,
+    account_id: statement.account_id,
+    file_name: fileName,
+    uploaded_at: statement.created_at,
+    from_date: statement.from_date,
+    to_date: statement.to_date,
+    opening_balance: statement.opening_balance,
+    closing_balance: statement.closing_balance,
+    filepath: statement.filepath,
+  };
+}
+
+function toNumber(value: unknown, fallback = 0): number {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : fallback;
+  }
+  if (typeof value === "string") {
+    const normalized = value.replace(/,/g, "").trim();
+    const parsed = Number.parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+  return fallback;
+}
+
+function formatDate(value: unknown): string {
+  if (typeof value !== "string" || !value) {
+    return "";
+  }
+
+  const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (match) {
+    return value;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  const day = String(parsed.getDate()).padStart(2, "0");
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const year = String(parsed.getFullYear());
+  return `${day}-${month}-${year}`;
+}
+
+function normalizeStatementData(payload: any): StatementData {
+  if (payload && typeof payload === "object" && "balance" in payload) {
+    const balance = payload.balance ?? {};
+    const transactions = payload.transactions ?? {};
+    const debits = transactions.debits ?? {};
+    const credits = transactions.credits ?? {};
+
+    return {
+      from_date: formatDate(payload.from_date),
+      to_date: formatDate(payload.to_date),
+      balance: {
+        opening: toNumber(balance.opening),
+        closing: toNumber(balance.closing),
+      },
+      currency: payload.currency ?? "",
+      transactions: {
+        debits: {
+          count: toNumber(debits.count),
+          amount: toNumber(debits.amount),
+          description: debits.description ?? "",
+        },
+        credits: {
+          count: toNumber(credits.count),
+          amount: toNumber(credits.amount),
+          description: credits.description ?? "",
+        },
+      },
+      observations: Array.isArray(payload.observations)
+        ? payload.observations
+        : [],
+    };
+  }
+
+  const statement = payload as ApiStatement;
+  return {
+    from_date: formatDate(statement.from_date),
+    to_date: formatDate(statement.to_date),
+    balance: {
+      opening: toNumber(statement.opening_balance),
+      closing: toNumber(statement.closing_balance),
+    },
+    currency: "USD",
+    transactions: {
+      debits: {
+        count: 0,
+        amount: 0,
+        description: "",
+      },
+      credits: {
+        count: 0,
+        amount: 0,
+        description: "",
+      },
+    },
+    observations: [],
+  };
+}
 
 // Mock data for development
 const MOCK_STATEMENTS: Statement[] = [
@@ -17,6 +158,9 @@ const MOCK_STATEMENTS: Statement[] = [
     uploaded_at: "2025-02-01T10:00:00Z",
     from_date: "2025-01-01",
     to_date: "2025-01-31",
+    opening_balance: 5000,
+    closing_balance: 4250.5,
+    filepath: "uploads/statements/stmt-1.json",
   },
   {
     statement_id: "stmt-2",
@@ -25,6 +169,9 @@ const MOCK_STATEMENTS: Statement[] = [
     uploaded_at: "2025-01-05T10:00:00Z",
     from_date: "2024-12-01",
     to_date: "2024-12-31",
+    opening_balance: 4500,
+    closing_balance: 5000,
+    filepath: "uploads/statements/stmt-2.json",
   },
   {
     statement_id: "stmt-3",
@@ -33,6 +180,9 @@ const MOCK_STATEMENTS: Statement[] = [
     uploaded_at: "2025-02-01T11:00:00Z",
     from_date: "2025-01-01",
     to_date: "2025-01-31",
+    opening_balance: 10000,
+    closing_balance: 10050,
+    filepath: "uploads/statements/stmt-3.json",
   },
 ];
 
@@ -134,7 +284,7 @@ export async function getStatements(): Promise<{
       return { success: true, data: MOCK_STATEMENTS };
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/statements`, {
+    const response = await fetch(`${API_BASE_URL}/statements/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -142,11 +292,15 @@ export async function getStatements(): Promise<{
     });
 
     if (!response.ok) {
-      return { success: false, error: "Failed to fetch statements" };
+      const error = await response.json().catch(() => null);
+      return {
+        success: false,
+        error: extractErrorMessage(error, "Failed to fetch statements"),
+      };
     }
 
-    const data = await response.json();
-    return { success: true, data };
+    const data = (await response.json()) as ApiStatement[];
+    return { success: true, data: data.map(normalizeStatement) };
   } catch (error) {
     console.error("Get statements error:", error);
     return { success: false, error: "An error occurred" };
@@ -170,8 +324,9 @@ export async function getStatementsByAccount(
       return { success: true, data: statements };
     }
 
+    const search = new URLSearchParams({ account_id: accountId });
     const response = await fetch(
-      `${BACKEND_URL}/api/accounts/${accountId}/statements`,
+      `${API_BASE_URL}/statements/?${search.toString()}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -181,11 +336,15 @@ export async function getStatementsByAccount(
     );
 
     if (!response.ok) {
-      return { success: false, error: "Failed to fetch statements" };
+      const error = await response.json().catch(() => null);
+      return {
+        success: false,
+        error: extractErrorMessage(error, "Failed to fetch statements"),
+      };
     }
 
-    const data = await response.json();
-    return { success: true, data };
+    const data = (await response.json()) as ApiStatement[];
+    return { success: true, data: data.map(normalizeStatement) };
   } catch (error) {
     console.error("Get statements by account error:", error);
     return { success: false, error: "An error occurred" };
@@ -210,56 +369,71 @@ export async function getStatementData(
       return { success: false, error: "Statement not found" };
     }
 
-    const response = await fetch(
-      `${BACKEND_URL}/api/statements/${statementId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store",
+    const response = await fetch(`${API_BASE_URL}/statements/${statementId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+      cache: "no-store",
+    });
 
     if (!response.ok) {
-      return { success: false, error: "Failed to fetch statement data" };
+      const error = await response.json().catch(() => null);
+      return {
+        success: false,
+        error: extractErrorMessage(error, "Failed to fetch statement data"),
+      };
     }
 
-    const data = await response.json();
-    return { success: true, data };
+    const payload = await response.json();
+    return { success: true, data: normalizeStatementData(payload) };
   } catch (error) {
     console.error("Get statement data error:", error);
     return { success: false, error: "An error occurred" };
   }
 }
 
-export async function uploadStatement(accountId: string, formData: FormData) {
+export async function uploadStatement(
+  accountId: string,
+  formData: FormData,
+  password?: string | null,
+) {
   try {
     const token = await getToken();
     if (!token) {
       return { success: false, error: "Not authenticated" };
     }
 
-    const response = await fetch(
-      `${BACKEND_URL}/api/accounts/${accountId}/statements`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
+    const statementFile =
+      formData.get("statement_file") ?? formData.get("file");
+    if (!(statementFile instanceof File)) {
+      return { success: false, error: "Statement file is required" };
+    }
+
+    const payload = new FormData();
+    payload.append("account_id", accountId);
+    payload.append("statement_file", statementFile);
+    if (password) {
+      payload.append("statement_password", password);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/statements/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+      body: payload,
+    });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => null);
       return {
         success: false,
-        error: error.message || "Failed to upload statement",
+        error: extractErrorMessage(error, "Failed to upload statement"),
       };
     }
 
-    const data = await response.json();
-    return { success: true, data };
+    const data = (await response.json()) as ApiStatement;
+    return { success: true, data: normalizeStatement(data) };
   } catch (error) {
     console.error("Upload statement error:", error);
     return { success: false, error: "An error occurred" };
@@ -273,18 +447,19 @@ export async function deleteStatement(statementId: string) {
       return { success: false, error: "Not authenticated" };
     }
 
-    const response = await fetch(
-      `${BACKEND_URL}/api/statements/${statementId}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const response = await fetch(`${API_BASE_URL}/statements/${statementId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
 
     if (!response.ok) {
-      return { success: false, error: "Failed to delete statement" };
+      const error = await response.json().catch(() => null);
+      return {
+        success: false,
+        error: extractErrorMessage(error, "Failed to delete statement"),
+      };
     }
 
     return { success: true };

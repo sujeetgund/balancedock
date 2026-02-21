@@ -16,8 +16,6 @@ import {
 } from "@/components/ui/card";
 import { login } from "@/lib/actions/auth";
 
-const IS_DEV = process.env.NODE_ENV === "development";
-
 export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -55,22 +53,6 @@ export default function LoginPage() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {IS_DEV && (
-            <div className="rounded-md bg-blue-50 dark:bg-blue-950 p-3 text-sm text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-              <strong>Development Mode:</strong> Use test credentials
-              <br />
-              Username:{" "}
-              <code className="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">
-                testuser
-              </code>
-              <br />
-              Password:{" "}
-              <code className="font-mono bg-blue-100 dark:bg-blue-900 px-1 rounded">
-                testpass
-              </code>
-            </div>
-          )}
-
           {error && (
             <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
               {error}

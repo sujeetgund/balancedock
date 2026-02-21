@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ export function UploadStatementDialog({ accountId }: { accountId: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -32,12 +34,17 @@ export function UploadStatementDialog({ accountId }: { accountId: string }) {
 
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("statement_file", file);
 
-      const result = await uploadStatement(accountId, formData);
+      const result = await uploadStatement(
+        accountId,
+        formData,
+        password || null,
+      );
 
       if (result.success) {
         setFile(null);
+        setPassword("");
         setOpen(false);
         router.refresh();
       } else {
@@ -62,7 +69,8 @@ export function UploadStatementDialog({ accountId }: { accountId: string }) {
         <DialogHeader>
           <DialogTitle>Upload Bank Statement</DialogTitle>
           <DialogDescription>
-            Select a PDF or image file of your bank statement
+            Select a PDF file of your bank statement. Use a password if the file
+            is encrypted.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -73,11 +81,25 @@ export function UploadStatementDialog({ accountId }: { accountId: string }) {
           )}
 
           <div className="space-y-2">
+            <Label htmlFor="statement_file">Statement File</Label>
             <Input
+              id="statement_file"
               type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               required
+              disabled={loading}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password (optional)</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter password if PDF is encrypted"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
             />
           </div>
@@ -86,7 +108,10 @@ export function UploadStatementDialog({ accountId }: { accountId: string }) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                setPassword("");
+              }}
             >
               Cancel
             </Button>
