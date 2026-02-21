@@ -1,15 +1,13 @@
 "use server";
 
-import { getToken } from "./auth";
-import { getAccounts } from "./accounts";
-import { getStatements } from "./statements";
-import type { User, DashboardStats } from "../types";
+import { getToken } from "@/lib/actions/auth";
+import { getAccounts } from "@/lib/actions/accounts";
+import { getStatements } from "@/lib/actions/statements";
+import type { User, DashboardStats } from "@/lib/types";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 const API_BASE_URL = `${BACKEND_URL}/api/v1`;
-const IS_DEV = process.env.NODE_ENV === "development";
-const TEST_TOKEN = "dev-mock-token-12345";
 
 type ApiUser = {
   user_id: string;
@@ -47,18 +45,6 @@ function normalizeUser(user: ApiUser): User {
   };
 }
 
-// Mock data for development
-const MOCK_USER: User = {
-  user_id: "test-user-id",
-  full_name: "Test User",
-  username: "testuser",
-};
-
-const MOCK_STATS: DashboardStats = {
-  total_accounts: 2,
-  total_statements: 3,
-  total_secrets: 1,
-};
 
 export async function getCurrentUser(): Promise<{
   success: boolean;
@@ -69,11 +55,6 @@ export async function getCurrentUser(): Promise<{
     const token = await getToken();
     if (!token) {
       return { success: false, error: "Not authenticated" };
-    }
-
-    // Development mode: Return mock user for test token
-    if (IS_DEV && token === TEST_TOKEN) {
-      return { success: true, data: MOCK_USER };
     }
 
     const response = await fetch(`${API_BASE_URL}/users/`, {
@@ -160,10 +141,6 @@ export async function getDashboardStats(): Promise<{
           statementsResult.error ||
           "Failed to fetch stats",
       };
-    }
-
-    if (IS_DEV) {
-      return { success: true, data: MOCK_STATS };
     }
 
     const data: DashboardStats = {

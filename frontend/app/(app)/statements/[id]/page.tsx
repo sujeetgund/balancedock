@@ -24,10 +24,12 @@ export default async function StatementDetailPage({
   const statement = result.data;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Statement Details</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+          Statement Details
+        </h1>
+        <p className="text-muted-foreground text-base">
           {new Date(statement.from_date).toLocaleDateString()} -{" "}
           {new Date(statement.to_date).toLocaleDateString()}
         </p>
@@ -68,16 +70,18 @@ export default async function StatementDetailPage({
             </div>
             <CardDescription>Money out</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <div>
-              <p className="text-sm text-muted-foreground">Total Amount</p>
+              <p className="text-[0.95rem] text-muted-foreground">
+                Total Amount
+              </p>
               <p className="text-2xl font-bold text-red-500">
                 {statement.currency}{" "}
                 {statement.transactions.debits.amount.toLocaleString()}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[0.95rem] text-muted-foreground">
                 Number of Transactions
               </p>
               <p className="text-lg font-semibold">
@@ -86,8 +90,10 @@ export default async function StatementDetailPage({
             </div>
             {statement.transactions.debits.description && (
               <div>
-                <p className="text-sm text-muted-foreground">Description</p>
-                <p className="text-sm">
+                <p className="text-[0.95rem] text-muted-foreground">
+                  Description
+                </p>
+                <p className="text-[0.95rem]">
                   {statement.transactions.debits.description}
                 </p>
               </div>
@@ -103,16 +109,18 @@ export default async function StatementDetailPage({
             </div>
             <CardDescription>Money in</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <div>
-              <p className="text-sm text-muted-foreground">Total Amount</p>
+              <p className="text-[0.95rem] text-muted-foreground">
+                Total Amount
+              </p>
               <p className="text-2xl font-bold text-green-500">
                 {statement.currency}{" "}
                 {statement.transactions.credits.amount.toLocaleString()}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[0.95rem] text-muted-foreground">
                 Number of Transactions
               </p>
               <p className="text-lg font-semibold">
@@ -121,8 +129,10 @@ export default async function StatementDetailPage({
             </div>
             {statement.transactions.credits.description && (
               <div>
-                <p className="text-sm text-muted-foreground">Description</p>
-                <p className="text-sm">
+                <p className="text-[0.95rem] text-muted-foreground">
+                  Description
+                </p>
+                <p className="text-[0.95rem]">
                   {statement.transactions.credits.description}
                 </p>
               </div>

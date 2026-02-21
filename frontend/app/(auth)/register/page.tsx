@@ -53,11 +53,11 @@ export default function RegisterPage() {
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Register</CardTitle>
+        <CardTitle className="text-3xl font-semibold">Register</CardTitle>
         <CardDescription>Create a new account to get started</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {error && (
             <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
               {error}
@@ -110,12 +110,12 @@ export default function RegisterPage() {
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter className="flex flex-col space-y-3">
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Creating account..." : "Register"}
           </Button>
 
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-[0.95rem] text-muted-foreground text-center">
             Already have an account?{" "}
             <Link href="/login" className="text-primary hover:underline">
               Login

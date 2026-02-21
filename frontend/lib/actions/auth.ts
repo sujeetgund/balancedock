@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 const API_BASE_URL = `${BACKEND_URL}/api/v1`;
 const ACCESS_TOKEN_COOKIE = "token";
 const REFRESH_TOKEN_COOKIE = "refresh_token";

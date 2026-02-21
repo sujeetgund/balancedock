@@ -1,13 +1,11 @@
 "use server";
 
-import { getToken } from "./auth";
-import type { Statement, StatementData } from "../types";
+import { getToken } from "@/lib/actions/auth";
+import type { Statement, StatementData } from "@/lib/types";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 const API_BASE_URL = `${BACKEND_URL}/api/v1`;
-const IS_DEV = process.env.NODE_ENV === "development";
-const TEST_TOKEN = "dev-mock-token-12345";
 
 type ApiStatement = {
   statement_id: string;
@@ -91,6 +89,7 @@ function formatDate(value: unknown): string {
   return `${day}-${month}-${year}`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeStatementData(payload: any): StatementData {
   if (payload && typeof payload === "object" && "balance" in payload) {
     const balance = payload.balance ?? {};
@@ -149,124 +148,6 @@ function normalizeStatementData(payload: any): StatementData {
   };
 }
 
-// Mock data for development
-const MOCK_STATEMENTS: Statement[] = [
-  {
-    statement_id: "stmt-1",
-    account_id: "acc-1",
-    file_name: "january_statement.pdf",
-    uploaded_at: "2025-02-01T10:00:00Z",
-    from_date: "2025-01-01",
-    to_date: "2025-01-31",
-    opening_balance: 5000,
-    closing_balance: 4250.5,
-    filepath: "uploads/statements/stmt-1.json",
-  },
-  {
-    statement_id: "stmt-2",
-    account_id: "acc-1",
-    file_name: "december_statement.pdf",
-    uploaded_at: "2025-01-05T10:00:00Z",
-    from_date: "2024-12-01",
-    to_date: "2024-12-31",
-    opening_balance: 4500,
-    closing_balance: 5000,
-    filepath: "uploads/statements/stmt-2.json",
-  },
-  {
-    statement_id: "stmt-3",
-    account_id: "acc-2",
-    file_name: "savings_january.pdf",
-    uploaded_at: "2025-02-01T11:00:00Z",
-    from_date: "2025-01-01",
-    to_date: "2025-01-31",
-    opening_balance: 10000,
-    closing_balance: 10050,
-    filepath: "uploads/statements/stmt-3.json",
-  },
-];
-
-const MOCK_STATEMENT_DATA: Record<string, StatementData> = {
-  "stmt-1": {
-    from_date: "2025-01-01",
-    to_date: "2025-01-31",
-    balance: {
-      opening: 5000.0,
-      closing: 4250.5,
-    },
-    currency: "USD",
-    transactions: {
-      debits: {
-        count: 15,
-        amount: 2500.0,
-        description:
-          "Various purchases including groceries, utilities, and entertainment",
-      },
-      credits: {
-        count: 3,
-        amount: 1750.5,
-        description: "Salary deposit and refunds",
-      },
-    },
-    observations: [
-      "Regular monthly salary received",
-      "Higher than usual spending on entertainment",
-      "Utility bills paid on time",
-    ],
-  },
-  "stmt-2": {
-    from_date: "2024-12-01",
-    to_date: "2024-12-31",
-    balance: {
-      opening: 4500.0,
-      closing: 5000.0,
-    },
-    currency: "USD",
-    transactions: {
-      debits: {
-        count: 20,
-        amount: 3000.0,
-        description: "Holiday shopping and regular expenses",
-      },
-      credits: {
-        count: 4,
-        amount: 3500.0,
-        description: "Salary and holiday bonus",
-      },
-    },
-    observations: [
-      "Holiday bonus received",
-      "Increased spending during holiday season",
-      "All bills paid on schedule",
-    ],
-  },
-  "stmt-3": {
-    from_date: "2025-01-01",
-    to_date: "2025-01-31",
-    balance: {
-      opening: 10000.0,
-      closing: 10050.0,
-    },
-    currency: "USD",
-    transactions: {
-      debits: {
-        count: 0,
-        amount: 0,
-        description: "No debits this period",
-      },
-      credits: {
-        count: 1,
-        amount: 50.0,
-        description: "Monthly interest credit",
-      },
-    },
-    observations: [
-      "Stable savings balance",
-      "Interest earned as expected",
-      "No withdrawals this month",
-    ],
-  },
-};
 
 export async function getStatements(): Promise<{
   success: boolean;
@@ -277,11 +158,6 @@ export async function getStatements(): Promise<{
     const token = await getToken();
     if (!token) {
       return { success: false, error: "Not authenticated" };
-    }
-
-    // Development mode: Return mock statements for test token
-    if (IS_DEV && token === TEST_TOKEN) {
-      return { success: true, data: MOCK_STATEMENTS };
     }
 
     const response = await fetch(`${API_BASE_URL}/statements/`, {
@@ -314,14 +190,6 @@ export async function getStatementsByAccount(
     const token = await getToken();
     if (!token) {
       return { success: false, error: "Not authenticated" };
-    }
-
-    // Development mode: Return mock statements for test token
-    if (IS_DEV && token === TEST_TOKEN) {
-      const statements = MOCK_STATEMENTS.filter(
-        (stmt) => stmt.account_id === accountId,
-      );
-      return { success: true, data: statements };
     }
 
     const search = new URLSearchParams({ account_id: accountId });
@@ -358,15 +226,6 @@ export async function getStatementData(
     const token = await getToken();
     if (!token) {
       return { success: false, error: "Not authenticated" };
-    }
-
-    // Development mode: Return mock statement data for test token
-    if (IS_DEV && token === TEST_TOKEN) {
-      const data = MOCK_STATEMENT_DATA[statementId];
-      if (data) {
-        return { success: true, data };
-      }
-      return { success: false, error: "Statement not found" };
     }
 
     const response = await fetch(`${API_BASE_URL}/statements/${statementId}`, {

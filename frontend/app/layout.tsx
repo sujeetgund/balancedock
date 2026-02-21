@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Cormorant_Garamond,
+  Geist_Mono,
+  Plus_Jakarta_Sans,
+} from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
+  subsets: ["latin"],
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-cormorant-garamond",
   subsets: ["latin"],
 });
 
@@ -25,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${plusJakartaSans.variable} ${cormorantGaramond.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>

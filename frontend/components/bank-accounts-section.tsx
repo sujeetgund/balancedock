@@ -85,50 +85,17 @@ export function BankAccountsSection({ accounts }: { accounts: BankAccount[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bank Accounts</CardTitle>
-        <CardDescription>Manage your bank accounts</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {accounts.map((account) => (
-            <Card key={account.account_id} className="relative">
-              <CardHeader>
-                <CardTitle className="text-base">
-                  {account.account_name}
-                </CardTitle>
-                <CardDescription>{account.bank_name}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {account.account_number}
-                </p>
-                <div className="mt-4 flex gap-2">
-                  <Link href={`/accounts/${account.account_id}`}>
-                    <Button variant="outline" size="sm">
-                      View
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(account.account_id)}
-                    disabled={deletingId === account.account_id}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle>Bank Accounts</CardTitle>
+            <CardDescription>Manage your bank accounts</CardDescription>
+          </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Card className="cursor-pointer border-dashed hover:border-primary hover:bg-accent/50 transition-colors">
-                <CardContent className="flex flex-col items-center justify-center h-full min-h-[180px]">
-                  <Plus className="h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="font-medium">Add New Account</p>
-                </CardContent>
-              </Card>
+              <Button size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Account
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -137,7 +104,7 @@ export function BankAccountsSection({ accounts }: { accounts: BankAccount[] }) {
                   Enter the details of your bank account
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 {error && (
                   <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
                     {error}
@@ -204,6 +171,44 @@ export function BankAccountsSection({ accounts }: { accounts: BankAccount[] }) {
               </form>
             </DialogContent>
           </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {accounts.map((account) => (
+            <Card key={account.account_id} className="relative">
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {account.account_name}
+                </CardTitle>
+                <CardDescription className="font-medium text-foreground/75">
+                  {account.bank_name}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="font-medium text-foreground">
+                  {account.account_number}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <Link href={`/accounts/${account.account_id}`}>
+                    <Button variant="outline" size="sm">
+                      View
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => handleDelete(account.account_id)}
+                    disabled={deletingId === account.account_id}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </CardContent>
     </Card>

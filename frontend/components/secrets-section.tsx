@@ -119,7 +119,7 @@ export function SecretsSection({ secrets }: { secrets: Secret[] }) {
                   expiration date
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4">
+              <form onSubmit={handleCreate} className="space-y-3">
                 {error && (
                   <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
                     {error}
@@ -185,7 +185,7 @@ export function SecretsSection({ secrets }: { secrets: Secret[] }) {
             <TableBody>
               {secrets.map((secret) => (
                 <TableRow key={secret.secret_id}>
-                  <TableCell className="font-mono text-sm">
+                  <TableCell className="font-mono text-[0.9rem]">
                     {secret.secret_key}
                   </TableCell>
                   <TableCell>
@@ -214,16 +214,19 @@ export function SecretsSection({ secrets }: { secrets: Secret[] }) {
                         ) : (
                           <>
                             <Copy className="h-4 w-4" />
+                            Copy
                           </>
                         )}
                       </Button>
                       <Button
-                        variant="destructive"
+                        variant="outline"
                         size="sm"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                         onClick={() => handleDelete(secret.secret_id)}
                         disabled={deletingId === secret.secret_id}
                       >
                         <Trash2 className="h-4 w-4" />
+                        Delete
                       </Button>
                     </div>
                   </TableCell>

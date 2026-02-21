@@ -60,7 +60,7 @@ export function ProfileSection({ user }: { user: User }) {
         <CardDescription>Update your profile information</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {error && (
             <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
               {error}

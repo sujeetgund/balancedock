@@ -31,46 +31,50 @@ export default async function DashboardPage() {
   const recentStatements = statementsResult.data?.slice(0, 5) || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
           Hello, {user.full_name}
         </h1>
-        <p className="text-muted-foreground">Welcome to your dashboard</p>
+        <p className="text-muted-foreground text-base">
+          Welcome to your dashboard
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-[0.95rem] font-semibold">
               Total Bank Accounts
             </CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_accounts}</div>
+            <div className="text-3xl font-bold">{stats.total_accounts}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Statements</CardTitle>
+            <CardTitle className="text-[0.95rem] font-semibold">
+              Statements
+            </CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_statements}</div>
+            <div className="text-3xl font-bold">{stats.total_statements}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-[0.95rem] font-semibold">
               Secrets Generated
             </CardTitle>
             <Key className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_secrets}</div>
+            <div className="text-3xl font-bold">{stats.total_secrets}</div>
           </CardContent>
         </Card>
       </div>

@@ -1,13 +1,11 @@
 "use server";
 
-import { getToken } from "./auth";
-import type { Secret } from "../types";
+import { getToken } from "@/lib/actions/auth";
+import type { Secret } from "@/lib/types";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 const API_BASE_URL = `${BACKEND_URL}/api/v1`;
-const IS_DEV = process.env.NODE_ENV === "development";
-const TEST_TOKEN = "dev-mock-token-12345";
 
 type ApiSecret = {
   secret_id: string;
@@ -40,17 +38,6 @@ function extractErrorMessage(payload: unknown, fallback: string): string {
   return fallback;
 }
 
-// Mock data for development
-const MOCK_SECRETS: Secret[] = [
-  {
-    secret_id: "secret-1",
-    user_id: "user-1",
-    secret_key: "sk_test_1234567890abcdef",
-    expires_at: null,
-    description: "Test secret",
-    created_at: "2025-02-01T09:00:00Z",
-  },
-];
 
 export async function getSecrets(): Promise<{
   success: boolean;
@@ -61,11 +48,6 @@ export async function getSecrets(): Promise<{
     const token = await getToken();
     if (!token) {
       return { success: false, error: "Not authenticated" };
-    }
-
-    // Development mode: Return mock secrets for test token
-    if (IS_DEV && token === TEST_TOKEN) {
-      return { success: true, data: MOCK_SECRETS };
     }
 
     const response = await fetch(`${API_BASE_URL}/secrets/`, {

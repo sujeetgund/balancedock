@@ -1,13 +1,11 @@
 "use server";
 
-import { getToken } from "./auth";
-import type { BankAccount } from "../types";
+import { getToken } from "@/lib/actions/auth";
+import type { BankAccount } from "@/lib/types";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 const API_BASE_URL = `${BACKEND_URL}/api/v1`;
-const IS_DEV = process.env.NODE_ENV === "development";
-const TEST_TOKEN = "dev-mock-token-12345";
 
 type AccountType = "salary" | "savings" | "credit";
 
@@ -52,26 +50,6 @@ function normalizeAccount(account: ApiBankAccount): BankAccount {
   };
 }
 
-// Mock data for development
-const MOCK_ACCOUNTS: BankAccount[] = [
-  {
-    account_id: "acc-1",
-    account_name: "Main Checking",
-    bank_name: "Chase Bank",
-    account_number: "****1234",
-    account_type: "salary",
-    created_at: "2025-01-15T10:00:00Z",
-  },
-  {
-    account_id: "acc-2",
-    account_name: "Savings Account",
-    bank_name: "Bank of America",
-    account_number: "****5678",
-    account_type: "savings",
-    created_at: "2025-01-20T14:30:00Z",
-  },
-];
-
 export async function getAccounts(): Promise<{
   success: boolean;
   data?: BankAccount[];
@@ -81,11 +59,6 @@ export async function getAccounts(): Promise<{
     const token = await getToken();
     if (!token) {
       return { success: false, error: "Not authenticated" };
-    }
-
-    // Development mode: Return mock accounts for test token
-    if (IS_DEV && token === TEST_TOKEN) {
-      return { success: true, data: MOCK_ACCOUNTS };
     }
 
     const response = await fetch(`${API_BASE_URL}/bank-accounts/`, {
@@ -118,15 +91,6 @@ export async function getAccount(
     const token = await getToken();
     if (!token) {
       return { success: false, error: "Not authenticated" };
-    }
-
-    // Development mode: Return mock account for test token
-    if (IS_DEV && token === TEST_TOKEN) {
-      const account = MOCK_ACCOUNTS.find((acc) => acc.account_id === accountId);
-      if (account) {
-        return { success: true, data: account };
-      }
-      return { success: false, error: "Account not found" };
     }
 
     const accountsResult = await getAccounts();

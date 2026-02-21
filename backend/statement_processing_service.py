@@ -106,7 +106,6 @@ class StatementProcessingService:
             },
         )
         self.prompt = PromptTemplate.from_template(template)
-
         self.chain = self.prompt | self.llm | StrOutputParser()
 
     def _get_reader(
@@ -176,18 +175,16 @@ class StatementProcessingService:
     def process_statement(
         self, pdf_source: Union[str, bytes, BinaryIO], password: str = None
     ) -> StatementProcessingResult:
+        # open the PDF
         reader = self._get_reader(pdf_source, password=password)
+
+        # extract tables and format them as markdown for the LLM
         tables = self.extract_tables_from_pdf(reader)
         formatted_tables = self._format_tables(tables)
+
+        # extract structured information from the formatted tables using the LLM chain
         response = self.chain.invoke({"tables": formatted_tables})
 
+        # parse the JSON response and return a StatementProcessingResult instance
         json_response = json.loads(response)
         return StatementProcessingResult(**json_response)
-
-
-if __name__ == "__main__":
-    service = StatementProcessingService(api_key=settings.GROQ_API_KEY)
-    result = service.process_statement(
-        pdf_source="temp_uploads/sample_bank_statement.pdf", password="SUJE2011"
-    )
-    print(result)

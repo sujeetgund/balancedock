@@ -36,13 +36,13 @@ export default async function AccountDetailPage({
   const statements = statementsResult.data || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
             {account.account_name}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-base">
             {account.bank_name} • {account.account_number}
           </p>
         </div>

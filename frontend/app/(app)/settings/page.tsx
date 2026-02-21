@@ -20,10 +20,12 @@ export default async function SettingsPage() {
   const secrets = secretsResult.data || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+          Settings
+        </h1>
+        <p className="text-muted-foreground text-base">
           Manage your profile, accounts, and API secrets
         </p>
       </div>

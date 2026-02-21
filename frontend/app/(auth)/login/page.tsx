@@ -46,13 +46,13 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Login</CardTitle>
+        <CardTitle className="text-3xl font-semibold">Login</CardTitle>
         <CardDescription>
           Enter your credentials to access your account
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {error && (
             <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
               {error}
@@ -90,12 +90,12 @@ export default function LoginPage() {
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter className="flex flex-col space-y-3">
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </Button>
 
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-[0.95rem] text-muted-foreground text-center">
             Don&apos;t have an account?{" "}
             <Link href="/register" className="text-primary hover:underline">
               Register
