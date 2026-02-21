@@ -1,0 +1,23 @@
+{
+  "from_date": "01-02-2026",
+  "to_date": "18-02-2026",
+  "balance": { "opening": 371.47, "closing": 982.93 },
+  "currency": "INR",
+  "transactions": {
+    "debits": {
+      "count": 52,
+      "amount": 8439.5,
+      "description": "Total debit (withdrawal) transactions"
+    },
+    "credits": {
+      "count": 6,
+      "amount": 9051.0,
+      "description": "Total credit (deposit) transactions"
+    }
+  },
+  "observations": [
+    "The statement contains many more debit transactions (52) than credit transactions (6).",
+    "Large credit entries on 08-02-2026 (\u20b94,650) and 07-02-2026 (\u20b92,000) offset numerous debits.",
+    "A significant debit of \u20b94,630 on 08-02-2026 occurs on the same day as a large credit, resulting in a net increase in balance."
+  ]
+}
