@@ -1,19 +1,18 @@
 # BalanceDock
 
-**Secure bank statement intelligence for AI agents and developers.**
+**Privacy-first financial intelligence infrastructure for AI agents**
 
-BalanceDock is a full-stack platform that helps users upload bank statements, transform them into structured financial data with LLM-powered extraction, and expose that data through secure APIs for financial decision support.
+BalanceDock transforms static bank statement PDFs into structured financial data that AI agents can reason over securely, without requiring users to expose live banking credentials to third-party services.
 
 ---
 
-## Why BalanceDock
+## The Problem
 
-Developers building financial copilots need a reliable bridge between raw statements (PDFs) and machine-readable insights. BalanceDock provides that bridge with:
+Personal financial data is trapped in static, unstructured PDF bank statements that are difficult for modern AI agents to read or analyze. Users face a trade-off: they either manually input data into budgeting apps (time-consuming) or grant third-party apps full, insecure access to their live bank feeds (privacy risk).
 
-- A **Next.js frontend** for account, statement, and secret management
-- A **FastAPI backend** with JWT auth and user-scoped data access
-- A **PostgreSQL database** for persistent metadata and identity records
-- An **LLM statement processing pipeline** for extracting balances, transaction summaries, and observations
+## The Solution
+
+**BalanceDock** bridges this gap by providing a local, privacy-first infrastructure. It transforms raw PDF statements into structured, encrypted JSON vaults and exposes them via the **Model Context Protocol (MCP)**. This allows AI agents to perform high-level financial reasoning, such as trend analysis and budget forecasting, without the data ever leaving the user's controlled environment.
 
 ---
 
@@ -42,10 +41,18 @@ Developers building financial copilots need a reliable bridge between raw statem
   - Retrieve parsed statement JSON
   - Delete statements and underlying stored files
 
+- **MCP-ready financial context access**
+  - Expose structured statement vault data for AI agent workflows via MCP-compatible interfaces
+  - Enable downstream reasoning use cases like trend analysis and budget forecasting
+
 - **Agent/API secret management**
   - Generate per-user secret keys
   - Optional description + expiry
   - Delete/revoke individual secrets
+
+- **Local-first, privacy-first deployment model**
+  - Keep statement processing and storage inside a user-controlled environment
+  - Avoid requiring direct third-party access to live bank feeds
 
 - **Developer-friendly frontend**
   - Built with Next.js App Router + Server Actions
@@ -62,6 +69,62 @@ Developers building financial copilots need a reliable bridge between raw statem
 - **Backend:** FastAPI + SQLAlchemy
 - **Database:** PostgreSQL
 - **AI extraction service:** LangChain + Groq model + PDF table extraction
+
+### Database ER Diagram
+
+```mermaid
+erDiagram
+  users {
+    UUID user_id PK
+    STRING full_name
+    STRING username UK
+    STRING hashed_password
+    DATETIME created_at
+  }
+
+  refresh_tokens {
+    INT id PK
+    STRING token UK
+    UUID user_id FK
+    DATETIME expires_at
+    BOOLEAN revoked
+    DATETIME created_at
+  }
+
+  accounts {
+    UUID account_id PK
+    UUID user_id FK
+    STRING bank_name
+    STRING account_number
+    ENUM account_type "salary|savings|credit"
+    DATETIME created_at
+  }
+
+  statements {
+    UUID statement_id PK
+    UUID account_id FK
+    DATETIME from_date
+    DATETIME to_date
+    FLOAT opening_balance
+    FLOAT closing_balance
+    STRING filepath
+    DATETIME created_at
+  }
+
+  secrets {
+    UUID secret_id PK
+    UUID user_id FK
+    STRING secret_key
+    DATETIME expires_at
+    STRING description
+    DATETIME created_at
+  }
+
+  users ||--o{ refresh_tokens : has
+  users ||--o{ accounts : owns
+  accounts ||--o{ statements : contains
+  users ||--o{ secrets : manages
+```
 
 ### Upload-to-insight flow (file upload to AI query)
 
@@ -83,6 +146,8 @@ Developers building financial copilots need a reliable bridge between raw statem
 ## API Documentation (FastAPI)
 
 > Base URL: `http://localhost:8080/api/v1`
+
+Detailed route docs: [Auth](backend/docs/AUTH_FLOW.md) · [Users](backend/docs/USERS_ROUTES.md) · [Accounts](backend/docs/ACCOUNTS_ROUTES.md) · [Statements](backend/docs/STATEMENTS_ROUTES.md) · [Secrets](backend/docs/SECRETS_ROUTES.md)
 
 ### Health
 
@@ -149,19 +214,14 @@ cd balancedock
 ### Prerequisites
 
 - Python 3.12+
+- `uv` installed
 - PostgreSQL running locally or remotely
 
 ### Steps
 
 ```bash
 cd backend
-python -m venv .venv
-# Windows PowerShell
-.\.venv\Scripts\Activate.ps1
-# macOS/Linux
-# source .venv/bin/activate
-
-pip install -r requirements.txt
+uv sync
 ```
 
 Create `backend/.env`:
@@ -197,7 +257,7 @@ mkdir -p uploads/statements
 Run backend server:
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8080
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 8080
 ```
 
 Open docs:
@@ -287,10 +347,10 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE).
 <table style="border: none;">
   <tr>
     <td align="center">
-      <a href="https://github.com/SujeetGund">
-        <img src="https://github.com/SujeetGund.png" width="100px;" alt="Sujeet Gund"/>
+      <a href="https://github.com/sujeetgund">
+        <img src="https://github.com/sujeetgund.png" width="100px;" alt="Sujeet Gund"/>
         <br />
-        <sub><b>Sujeet Gund</b></sub>
+        <p>Sujeet Gund</p>
       </a>
     </td>
   </tr>
